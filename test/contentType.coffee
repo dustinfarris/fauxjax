@@ -78,3 +78,47 @@ test "Fauxjax can handle text/json content type", (assert) ->
       assert.ok(false, "Faux request does match real request data. Request should not have returned and error")
     complete: (xhr, textStatus) ->
       done()
+
+test "Should be able to specify contentType", (assert) ->
+  done = assert.async()
+  $.fauxjax.new
+    method: 'POST'
+    url: '/api/do-something'
+    data: {'email': 'invalidemail'}
+    status: 400
+    responseText: {'email': ['Enter a valid email address.']}
+    contentType: 'application/json'
+
+  $.ajax
+    method: 'POST'
+    url: '/api/do-something'
+    data: {'email': 'invalidemail'}
+    success: (data, textStatus, xhr) ->
+      assert ok(false, "Faux returned success when it should have return an error.")
+    error: (xhr, textStatus) ->
+      assert.ok(true, "Faux should have returned an error")
+      assert.ok(_.isEqual(xhr.responseJSON, {'email': ['Enter a valid email address.']}))
+    complete: (xhr, textStatus) ->
+      done()
+
+test "Should be able to specify contentType in settings hash", (assert) ->
+  done = assert.async()
+  $.fauxjax.settings.contentType = 'application/json'
+  $.fauxjax.new
+    method: 'POST'
+    url: '/api/do-something'
+    data: {'email': 'invalidemail'}
+    status: 400
+    responseText: {'email': ['Enter a valid email address.']}
+
+  $.ajax
+    method: 'POST'
+    url: '/api/do-something'
+    data: {'email': 'invalidemail'}
+    success: (data, textStatus, xhr) ->
+      assert ok(false, "Faux returned success when it should have return an error.")
+    error: (xhr, textStatus) ->
+      assert.ok(true, "Faux should have returned an error")
+      assert.ok(_.isEqual(xhr.responseJSON, {'email': ['Enter a valid email address.']}))
+    complete: (xhr, textStatus) ->
+      done()
